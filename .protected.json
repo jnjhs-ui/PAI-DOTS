@@ -1,0 +1,22 @@
+{
+  "_docs": "Files that should not be overwritten during sync. Used by validate-protected.ts.",
+  "protected_files": [
+    "README.md",
+    "LICENSE",
+    ".claude/.env.example",
+    ".claude/tools/self-test.ts",
+    ".claude/tools/validate-protected.ts"
+  ],
+  "forbidden_patterns": [
+    "sk-ant-",
+    "sk-proj-",
+    "ELEVENLABS_API_KEY=(?!your_)",
+    "SENDGRID_API_KEY=(?!your_)",
+    "-----BEGIN PRIVATE KEY-----"
+  ],
+  "pii_strings": [
+    "_ADD_YOUR_REAL_NAME_HERE_",
+    "_ADD_YOUR_EMAIL_HERE_"
+  ],
+  "_pii_docs": "Add your real name, email, or any other PII you never want committed. validate-protected.ts will block commits containing these strings."
+}

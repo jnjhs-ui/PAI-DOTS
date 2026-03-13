@@ -1,0 +1,46 @@
+# Environment and secrets
+.claude/.env
+.claude/.env.local
+.claude/.credentials.json
+
+# User-specific / personal data — never commit
+.claude/settings.local.json
+.claude/CLAUDE.md
+.claude/projects/
+.claude/history.jsonl
+.claude/devlog/
+.claude/cache/
+.claude/backups/
+.claude/ide/
+.claude/plans/
+.claude/plugins/
+.claude/shell-snapshots/
+.claude/mcp-needs-auth-cache.json
+.claude/file-history/
+.claude/sessions/
+
+# GSD (Get-Shit-Done) — separate system, installed per-user
+.claude/get-shit-done/
+.claude/gsd-file-manifest.json
+.claude/package.json
+.claude/hooks/gsd-*.js
+.claude/commands/gsd/
+.claude/agents/gsd-*.md
+
+# Runtime artifacts
+.claude/logs/
+.claude/tasks/*.md
+.claude/agents/*/memory.md
+.claude/agents/*/.devlog/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+
+# Node/Bun
+node_modules/

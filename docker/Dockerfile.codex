@@ -1,0 +1,24 @@
+FROM node:20-slim
+
+# System deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git curl ca-certificates unzip jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install OpenAI Codex CLI
+RUN npm install -g @openai/codex
+
+# Install Bun
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:$PATH"
+
+# Copy PAI-DOTS scaffolding into the image
+COPY .claude/ /root/.claude/
+
+# Codex runner + orchestrator
+COPY docker/codex-runner.ts /opt/codex-runner.ts
+COPY docker/orchestrator.ts /opt/orchestrator.ts
+
+WORKDIR /workspace
+
+ENTRYPOINT ["bun", "/opt/codex-runner.ts"]

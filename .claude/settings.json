@@ -1,0 +1,102 @@
+{
+  "_docs": "PAI-DOTS settings. Hook commands use 'bun' runtime. Paths are relative to DOTS_DIR (~/.claude by default).",
+  "env": {
+    "PATH": "/c/Users/Me/.bun/bin:/usr/local/bin:/usr/bin:/bin"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git stash list*)",
+      "Bash(bun --version)",
+      "Bash(bun run *)",
+      "Bash(bun test*)",
+      "Bash(npm run *)",
+      "Bash(npm test*)",
+      "Bash(node --version)",
+      "Bash(python --version)",
+      "Bash(python3 --version)",
+      "Bash(which *)",
+      "Bash(ls*)",
+      "Bash(npx get-shit-done-cc@latest --claude --global)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "bun \"$HOME/.claude/hooks/session-start.ts\"",
+        "timeout": 5000
+      },
+      {
+        "type": "command",
+        "command": "bun \"$HOME/.claude/hooks/session-init.ts\"",
+        "timeout": 5000
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:/Users/Me/.claude/hooks/gsd-check-update.js\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "type": "command",
+        "command": "bun \"$HOME/.claude/hooks/parse-intent.ts\"",
+        "timeout": 5000
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|Read",
+        "type": "command",
+        "command": "bun \"$HOME/.claude/hooks/security-validator.ts\"",
+        "timeout": 1000
+      },
+      {
+        "matcher": "Agent",
+        "type": "command",
+        "command": "bun \"$HOME/.claude/hooks/agent-execution-guard.ts\"",
+        "timeout": 1000
+      }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "bun \"$HOME/.claude/hooks/capture-tool-events.ts\"",
+        "timeout": 5000
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:/Users/Me/.claude/hooks/gsd-context-monitor.js\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "bun \"$HOME/.claude/hooks/session-end.ts\"",
+        "timeout": 5000
+      }
+    ],
+    "PreCompact": [
+      {
+        "type": "command",
+        "command": "bun \"$HOME/.claude/hooks/pre-compact.ts\"",
+        "timeout": 3000
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "node \"C:/Users/Me/.claude/hooks/gsd-statusline.js\""
+  }
+}

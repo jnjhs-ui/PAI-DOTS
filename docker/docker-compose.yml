@@ -1,0 +1,135 @@
+# PAI-DOTS Multi-Agent Container Orchestration
+#
+# Usage:
+#   docker compose build                    # Build agent image
+#   docker compose up redis -d              # Start Redis
+#   docker compose up qa                    # Start QA agent
+#   docker compose up --scale qa=1 reviewer=1 architect=1  # Multiple agents
+#
+# One-shot mode (run task and exit):
+#   docker compose run --rm -e ONE_SHOT=true -e TASK="Run npm test" qa
+
+x-agent-base: &agent-base
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile
+  env_file: .env
+  depends_on:
+    - redis
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        cpus: "2"
+        memory: 2G
+
+services:
+  # --- Infrastructure ---
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  # --- Agents ---
+
+  qa:
+    <<: *agent-base
+    environment:
+      - AGENT_NAME=qa
+    volumes:
+      - ${WORKSPACE_PATH:-./../workspace}:/workspace:ro
+      - qa-memory:/root/.claude/agents/qa
+
+  reviewer:
+    <<: *agent-base
+    environment:
+      - AGENT_NAME=reviewer
+    volumes:
+      - ${WORKSPACE_PATH:-./../workspace}:/workspace:ro
+      - reviewer-memory:/root/.claude/agents/reviewer
+
+  ops:
+    <<: *agent-base
+    environment:
+      - AGENT_NAME=ops
+    volumes:
+      - ${WORKSPACE_PATH:-./../workspace}:/workspace  # read-write for deploys
+      - ops-memory:/root/.claude/agents/ops
+
+  hubspot:
+    <<: *agent-base
+    environment:
+      - AGENT_NAME=hubspot
+    volumes:
+      - ${WORKSPACE_PATH:-./../workspace}:/workspace:ro
+      - hubspot-memory:/root/.claude/agents/hubspot
+
+  scribe:
+    <<: *agent-base
+    environment:
+      - AGENT_NAME=scribe
+    volumes:
+      - ${WORKSPACE_PATH:-./../workspace}:/workspace:ro
+      - scribe-memory:/root/.claude/agents/scribe
+
+  architect:
+    <<: *agent-base
+    environment:
+      - AGENT_NAME=architect
+    volumes:
+      - ${WORKSPACE_PATH:-./../workspace}:/workspace:ro
+      - architect-memory:/root/.claude/agents/architect
+
+  researcher:
+    <<: *agent-base
+    environment:
+      - AGENT_NAME=researcher
+    volumes:
+      - ${WORKSPACE_PATH:-./../workspace}:/workspace:ro
+      - researcher-memory:/root/.claude/agents/researcher
+
+  # --- Codex Agent (separate Dockerfile, uses CODEX_CMD) ---
+
+  codex:
+    <<: *agent-base
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.codex
+    environment:
+      - AGENT_NAME=codex
+      - CODEX_CMD=codex --non-interactive
+    volumes:
+      - ${WORKSPACE_PATH:-./../workspace}:/workspace
+      - codex-memory:/root/.claude/agents/codex
+
+  # --- Orchestrator (run manually, not a long-running service) ---
+  # Usage: docker compose run --rm orchestrator --agent qa --task "Run tests"
+
+  orchestrator:
+    <<: *agent-base
+    entrypoint: ["bun", "/opt/orchestrator.ts"]
+    volumes:
+      - ${WORKSPACE_PATH:-./../workspace}:/workspace
+    profiles:
+      - tools  # Only starts with: docker compose --profile tools run orchestrator
+
+volumes:
+  redis-data:
+  qa-memory:
+  reviewer-memory:
+  ops-memory:
+  hubspot-memory:
+  scribe-memory:
+  architect-memory:
+  researcher-memory:
+  codex-memory:
